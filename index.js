@@ -1,0 +1,12 @@
+const express=require("express")
+const app=express()
+const routes=require("./Routes/routes")
+const mongoose=require("mongoose")
+mongoose.connect("mongodb+srv://Vikram:Vikram1636@vkecommerce.s5qnoks.mongodb.net/?retryWrites=true&w=majority&appName=vkecommerce")
+.then(()=>console.log("Mongodb connect successfully"))
+.catch(error=>console.log(error))
+app.use(express.json())
+app.use('/apis',routes)
+app.listen(3000,()=>{
+    console.log("Server running on 3000 port")
+})
