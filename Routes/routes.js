@@ -1,21 +1,16 @@
 const Expenses=require("../Models/Expenses")
 const express=require("express")
+const Message=require("../Models/Message")
 const app=express()
 app.post('/add',async(req,res)=>{
     try {
-        const expense=new Expenses(req.body)
-        await expense.save()
-        res.status(201).json({"message":"Your expense added successfully"})
+        const message=req.body.message.toLowerCase();
+        const amountsMatch=message.match(/\d+/)
+        const amount=amountsMatch?parseInt(amountsMatch[0]):0;
+     
+        res.status(200).json({"message":amount})
     } catch (error) {
-        res.status(400).json({"message":"Something went wrong"})
-    }
-})
-app.get('/transactions',async(req,res)=>{
-    try {
-        const expenses=await Expenses.find();
-        res.status(200).json(expenses)
-    } catch (error) {
-        res.status(400).json({"message":"Something went wrong"})
+        res.status(400).json({"message":"Error"})
     }
 })
 module.exports=app
