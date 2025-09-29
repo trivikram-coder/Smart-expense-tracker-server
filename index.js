@@ -4,13 +4,16 @@ const cors=require("cors")
 const routes=require("./Routes/routes")
 const authRoutes=require("./Routes/authRoute")
 const mongoose=require("mongoose")
-mongoose.connect("mongodb+srv://Vikram:Vikram1636@vkecommerce.s5qnoks.mongodb.net/?retryWrites=true&w=majority&appName=vkecommerce")
+const dotenv=require("dotenv")
+app.use(dotenv())
+mongoose.connect(process.env.URL)
 .then(()=>console.log("Mongodb connect successfully"))
 .catch(error=>console.log(error))
 app.use(cors())
 app.use(express.json())
 app.use('/apis',routes)
 app.use("/auth",authRoutes)
-app.listen(3000,()=>{
+const port=process.env.PORT||3000
+app.listen(port,()=>{
     console.log("Server running on 3000 port")
 })
