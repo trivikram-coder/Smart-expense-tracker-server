@@ -1,6 +1,11 @@
 const nodemailer = require('nodemailer');
 const dotenv=require("dotenv")
+const express=require("express")
+const app=express()
+const User=require("../Models/Account")
+const Otp = require('../Models/Otp');
 dotenv.config()
+
 
 // Nodemailer transporter equivalent to your Spring Boot config
 const transporter = nodemailer.createTransport({
@@ -31,14 +36,47 @@ async function sendMail(to, subject, text, html) {
     console.error('Error sending email:', error);
   }
 }
-function getOtp(){
-    return Math.floor(10000+Math.random()*90000)
+function generateOtp(){
+    return Math.floor(100000+Math.random()*90000)
 }
-const otp=getOtp()
+
 // Example usage
-sendMail(
-  '226m1a4202@gmail.com',
-  'Test Email from Node',
-  'Hello! This is a plain text message.',
-  `${otp}`
-);
+
+
+//Otp route
+app.post("/sendotp",async(req,res)=>{
+  try {
+    const {email}=req.body;
+    
+    const user=await User.findOne({email:email})
+    if(!user){
+      return res.status(404).json({"message":"Invalid email id"});
+    }
+    const otp=generateOtp();
+    sendMail(
+      email,
+      'Test Email from Node',
+      'Hello! This is a plain text message.',
+      `${otp}`
+    );
+    const otpMod=new Otp({otp:otp});
+    await otpMod.save();
+    res.status(201).json({"message":"Otp sent to your email address","userId":user._id})
+  } catch (error) {
+    res.status(500).json({"message":"Something went wrong"})
+  }
+})
+app.post("/validateotp",async(req,res)=>{
+  try {
+    const {otp}=req.body;
+   
+    const validateOtp=await Otp.findOne({otp:otp})
+    if(!validateOtp){
+      return res.status(400).json({"message":"Invalid otp"})
+    }
+    res.status(200).json({"message":"Otp validated"});
+  } catch (error) {
+    res.status(500).json({"message":"Something went wrong"})
+  }
+})
+module.exports=app

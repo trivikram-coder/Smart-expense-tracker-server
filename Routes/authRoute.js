@@ -68,14 +68,12 @@ router.get("/user/:id", async (req, res) => {
 });
 
 // PUT /user/:id - update user info
+// PUT /user/:id - update user info (excluding password)
 router.put("/user/:id", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email } = req.body;
 
     const updateData = { name, email };
-    if (password) {
-      updateData.password = await bcrypt.hash(password, 10);
-    }
 
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
@@ -86,6 +84,28 @@ router.put("/user/:id", async (req, res) => {
     res.status(200).json(updatedUser);
   } catch (err) {
     res.status(400).json({ message: "Update failed", error: err.message });
+  }
+});
+
+// PUT /user/:id/password - update user password only
+router.put("/user/:id/password", async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { password: hashedPassword },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    res.status(200).json({ message: "Password updated successfully", user: updatedUser });
+  } catch (err) {
+    res.status(400).json({ message: "Password update failed", error: err.message });
   }
 });
 
