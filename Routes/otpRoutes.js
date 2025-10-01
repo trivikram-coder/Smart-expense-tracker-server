@@ -16,11 +16,18 @@ const transporter = nodemailer.createTransport({
     user: process.env.email,   // spring.mail.username
     pass: process.env.pass,         // spring.mail.password (App Password)
   },
+  requireTLS:true,
   tls: {
     rejectUnauthorized: false          // allows self-signed certs, optional
   }
 });
-
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("SMTP connection error:", error);
+  } else {
+    console.log("SMTP ready to send emails");
+  }
+});
 // Example function to send email
 async function sendMail(to, subject, text, html) {
   try {
