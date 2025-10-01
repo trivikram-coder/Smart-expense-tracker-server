@@ -55,8 +55,8 @@ app.post("/sendotp",async(req,res)=>{
     const otp=generateOtp();
     sendMail(
       email,
-      'Test Email from Node',
-      'Hello! This is a plain text message.',
+      'Forget password',
+      'Enter this otp to verify your email to change password',
       `${otp}`
     );
     const otpMod=new Otp({otp:otp});
