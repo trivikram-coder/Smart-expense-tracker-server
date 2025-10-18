@@ -40,8 +40,8 @@ router.get("/read", async (req, res) => {
     if (!userId) {
       return res.status(400).json({ message: "userId query parameter is required" });
     }
-    const cachedData=cacheObj[cachedKey];
-    if(cachedData){
+   
+    if(cacheObj[cachedKey]){
       return res.status(200).json({data:(cachedData),"source":"cache"})
     }
 
@@ -66,7 +66,7 @@ router.delete("/remove/:id", async (req, res) => {
     if (!del) {
       return res.status(404).json({ message: "Expense not found or unauthorized" });
     }
-    delete cachedObj[`expenses${userId}`]
+    delete cacheObj[`expenses${userId}`]
     res.status(200).json({ message: "Expense deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Unable to delete expense", error: error.message });
