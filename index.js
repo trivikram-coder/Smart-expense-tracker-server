@@ -6,10 +6,14 @@ const authRoutes=require("./Routes/authRoute")
 const otpRoutes=require("./Routes/otpRoutes")
 const mongoose=require("mongoose")
 const dotenv=require("dotenv")
+
 dotenv.config()
+//MongoDb connection
 mongoose.connect(process.env.URL)
-.then(()=>console.log("Mongodb connect successfully"))
+.then(()=>console.log("Mongodb connected successfully"))
 .catch(error=>console.log(error))
+
+
 app.use(cors())
 app.use(express.json())
 app.use('/apis',routes)

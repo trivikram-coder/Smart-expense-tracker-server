@@ -1,89 +1,93 @@
-const nodemailer = require('nodemailer');
-const dotenv=require("dotenv")
-const express=require("express")
-const app=express()
-const User=require("../Models/Account")
-const Otp = require('../Models/Otp');
-dotenv.config()
+const dotenv = require("dotenv");
+const express = require("express");
+const app = express();
+const User = require("../Models/Account");
+const Otp = require("../Models/Otp");
+const nodemailer = require("nodemailer");
 
+dotenv.config();
+app.use(express.json()); // parse JSON request bodies
 
-// Nodemailer transporter equivalent to your Spring Boot config
+// --- Nodemailer transporter using standard SMTP (e.g. Gmail) ---
+// Set EMAIL_USER and EMAIL_PASS in your .env (for Gmail use App Password or OAuth2)
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',     // spring.mail.host
-  port: 587,                  // spring.mail.port
-  secure: false,              // false for STARTTLS (TLS)
+  service: "gmail",
   auth: {
-    user: process.env.email,   // spring.mail.username
-    pass: process.env.pass,         // spring.mail.password (App Password)
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
-  requireTLS:true,
-  tls: {
-    rejectUnauthorized: false          // allows self-signed certs, optional
-  }
 });
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("SMTP connection error:", error);
-  } else {
-    console.log("SMTP ready to send emails");
-  }
-});
-// Example function to send email
+
+// --- Send email function ---
 async function sendMail(to, subject, text, html) {
   try {
     const info = await transporter.sendMail({
-      from: '"Smart Expense Tracker" <allatrivikram@gmail.com>',
+      from: `"Smart Expense Tracker" <${process.env.EMAIL_USER}>`,
       to: to,
       subject: subject,
       text: text,
       html: html,
     });
-    console.log('Email sent:', info.messageId);
+    console.log("Email sent:", info.response || info);
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error("Error sending email:", error);
+    throw error;
   }
 }
-function generateOtp(){
-    return Math.floor(100000+Math.random()*90000)
+
+// --- OTP generation ---
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000);
 }
+// Example/test call removed/commented to avoid sending on import
+// sendMail("226m1a4202@gmail.com","Otp","Hiii", `${generateOtp()}`)
 
-// Example usage
-
-
-//Otp route
-app.post("/sendotp",async(req,res)=>{
+// --- OTP send route ---
+app.post("/sendotp", async (req, res) => {
   try {
-    const {email}=req.body;
-    
-    const user=await User.findOne({email:email})
-    if(!user){
-      return res.status(404).json({"message":"Invalid email id"});
+    const { email } = req.body;
+
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return res.status(404).json({ message: "Invalid email id" });
     }
-    const otp=generateOtp();
-    sendMail(
+
+    const otp = generateOtp();
+
+    await sendMail(
       email,
-      'Forget password',
-      'Enter this otp to verify your email to change password',
-      `${otp}`
+      "Forget Password OTP",
+      `Enter this OTP to verify your email: ${otp}`,
+      `<h1>Your OTP: ${otp}</h1>`
     );
-    const otpMod=new Otp({otp:otp});
+
+    const otpMod = new Otp({ otp: otp, userId: user._id, createdAt: new Date() });
     await otpMod.save();
-    res.status(201).json({"message":"Otp sent to your email address","userId":user._id})
+
+    res.status(201).json({ message: "OTP sent to your email address", userId: user._id });
   } catch (error) {
-    res.status(500).json({"message":"Something went wrong"})
+    res.status(500).json({ message: "Something went wrong" });
   }
-})
-app.post("/validateotp",async(req,res)=>{
+});
+
+// --- OTP validation route ---
+app.post("/validateotp", async (req, res) => {
   try {
-    const {otp}=req.body;
-   
-    const validateOtp=await Otp.findOne({otp:otp})
-    if(!validateOtp){
-      return res.status(400).json({"message":"Invalid otp"})
+    const { otp, userId } = req.body;
+
+    // Check if OTP exists for that user and is not expired (optional: 5 min expiry)
+    const validateOtp = await Otp.findOne({ otp: otp, userId: userId });
+    if (!validateOtp) {
+      return res.status(400).json({ message: "Invalid OTP" });
     }
-    res.status(200).json({"message":"Otp validated"});
+
+    // Optional: delete OTP after validation
+    await Otp.deleteOne({ _id: validateOtp._id });
+
+    res.status(200).json({ message: "OTP validated successfully" });
   } catch (error) {
-    res.status(500).json({"message":"Something went wrong"})
+    res.status(500).json({ message: "Something went wrong" });
   }
-})
-module.exports=app
+});
+
+module.exports = app;
