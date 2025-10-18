@@ -42,6 +42,7 @@ router.get("/read", async (req, res) => {
     }
    
     if(cacheObj[cachedKey]){
+      const cachedData=cacheObj[cachedKey];
       return res.status(200).json({data:(cachedData),"source":"cache"})
     }
 
