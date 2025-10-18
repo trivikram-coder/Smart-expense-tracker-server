@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../Models/Account"); // your User model
 const bcrypt = require("bcryptjs");
-const cachedObj={}
+
 // POST /register - create new user
 router.post("/register", async (req, res) => {
   try {
@@ -58,20 +58,17 @@ router.post("/login", async (req, res) => {
 
 // GET /user/:id - get user info by ID
 router.get("/user/:id", async (req, res) => {
-  const cacheKey = `user${req.params.id}`;
+  
   try {
     // Try Redis first
-    const cachedData = cachedObj[cacheKey];
-    if (cachedData) {
-        return res.status(200).json(JSON.parse(cachedData));
-    }
+   
 
     // Fetch from DB
     const user = await User.findById(req.params.id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
 
     // Store in cache
-    cachedObj[cacheKey]=JSON.stringify(user)
+    
 
     res.status(200).json(user);
   } catch (err) {
@@ -95,7 +92,7 @@ router.put("/user/:id", async (req, res) => {
     ).select("-password");
 
     // Invalidate cache
-    delete cachedObj[`user${req.params.id}`];
+    
 
     res.status(200).json(updatedUser);
   } catch (err) {
