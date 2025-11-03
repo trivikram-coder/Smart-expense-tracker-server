@@ -55,7 +55,7 @@ async function addExpense(message, userId) {
 
   await expense.save();
 
-  return `Got it! Added ₹${amount} under ${category} on ${expense.date.toLocaleDateString()}`;
+  return `Got it! Added ₹${amount} of ${item} under ${category} on ${expense.date.toLocaleDateString()}`;
 }
 
 async function showExpenses(userId) {
