@@ -1,3 +1,4 @@
+const categorizeItem = require("../Ai model/categoryDetect");
 const Expenses = require("../Models/Expenses");
 
 function detectIntent(message) {
@@ -19,7 +20,7 @@ async function handleIntent(intent, message, userId) {
   }
 }
 
-function getCategory(message) {
+function getItem(message) {
   const match = message.match(/on\s+([a-zA-Z]+)/);
   return match ? match[1].toLowerCase() : "general";
 }
@@ -28,15 +29,27 @@ function getAmount(message) {
   const match = message.match(/\d+/);
   return match ? parseInt(match[0]) : 0;
 }
+async function getCategory(item){
+  try{
 
+    const category=await categorizeItem(item);
+   
+    return category;
+  }
+  catch(error){
+    console.log("Failed to load",error)
+  }
+}
 async function addExpense(message, userId) {
   const amount = getAmount(message);
-  const category = getCategory(message);
-
+  const item = getItem(message);
+  const category=await getCategory(item)
+  const date=new Date(Date.now())
   const expense = new Expenses({
     amount,
+    item,
     category,
-    date: new Date(), // store as Date
+    date: date.toLocaleDateString(), // store as Date
     userId
   });
 

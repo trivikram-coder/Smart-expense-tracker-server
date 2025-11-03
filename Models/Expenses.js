@@ -5,6 +5,7 @@ const schema=new mongoose.Schema({
       type:Number,
       required:true
    },
+   item:String,
    category:String,
    date:{
       type:Date,
