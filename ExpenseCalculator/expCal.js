@@ -69,7 +69,7 @@ async function showExpenses(userId) {
 async function checkBudget(userId) {
   const expenses = await Expenses.find({ userId });
   const total = expenses.reduce((sum, e) => sum + e.amount, 0);
-  const budget = 10000;
+  const budget = 1000000;
   return total > budget
     ? `⚠️ You exceeded your budget of ₹${budget} by ₹${total - budget}`
     : `✅ You are within budget. Total: ₹${total}`;
