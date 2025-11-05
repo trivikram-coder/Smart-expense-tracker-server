@@ -7,6 +7,10 @@ const schema=new mongoose.Schema({
    },
    item:String,
    category:String,
+   budget:{
+      type:Number,
+      required:true
+   },
    date:{
       type:Date,
       default:Date.now
