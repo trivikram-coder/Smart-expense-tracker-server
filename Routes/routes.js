@@ -2,20 +2,23 @@
 const express = require("express");
 const Expenses = require("../Models/Expenses");
 const { detectIntent, handleIntent } = require("../ExpenseCalculator/expCal");
-
+const Message=require("../Models/Message")
 const router = express.Router();
 
 // Add expense via message
 router.post("/add", async (req, res) => {
   try {
     const { userId, message } = req.body;
-
+    
     if (!userId || !message) {
       return res.status(400).json({ message: "userId and message are required" });
     }
-
     const intent = detectIntent(message.toLowerCase());
     const reply = await handleIntent(intent, message, userId);
+    await Message.insertMany([
+      { userId, sender: "client", message },
+      { userId, sender: "bot", message: reply },
+    ]);
 
     res.status(200).json({ message: reply });
   } catch (error) {
@@ -24,11 +27,23 @@ router.post("/add", async (req, res) => {
 });
 
 // Read all expenses of a user
+router.get("/msgs", async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) {
+      return res.status(400).json({ message: "userId required" });
+    }
+
+    const messages = await Message.find({ userId }).sort({ date: 1 });
+    res.status(200).json({ data: messages });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch messages", error: error.message });
+  }
+});
 
 router.get("/read", async (req, res) => {
   try {
     const userId = req.query.userId;
-    
     
 
     if (!userId) {
