@@ -9,7 +9,7 @@ const schema=new mongoose.Schema({
    category:String,
    budget:{
       type:Number,
-      required:true
+      
    },
    date:{
       type:Date,
