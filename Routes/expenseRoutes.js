@@ -27,31 +27,7 @@ router.post("/add", async (req, res) => {
 });
 
 // Read all expenses of a user
-router.get("/msgs", async (req, res) => {
-  try {
-    const { userId } = req.query;
-    if (!userId) {
-      return res.status(400).json({ message: "userId required" });
-    }
 
-    const messages = await Message.find({ userId }).sort({ date: 1 });
-    res.status(200).json({ data: messages });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch messages", error: error.message });
-  }
-});
-router.delete("/msgs/delete",async(req,res)=>{
-  try {
-    const {userId} = req.body
-    const result = await Message.deleteMany({userId})
-    if (result.deletedCount === 0) {
-      return res.status(404).json({message: "No messages found to delete"})
-    }
-    res.status(200).json({message: "Messages deleted successfully"})
-  } catch (error) {
-    res.status(500).json({message:"Failed to delete message",error:error.message})
-  }
-})
 router.get("/read", async (req, res) => {
   try {
     const userId = req.query.userId;

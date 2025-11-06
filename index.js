@@ -3,10 +3,11 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 
-const routes = require("./Routes/routes");
-const authRoutes = require("./Routes/authRoute");
+const routes = require("./Routes/expenseRoutes");
+const authRoutes = require("./Routes/authRoutes");
 const otpRoutes = require("./Routes/otpRoutes");
-
+const msgRoutes=require("./Routes/messageRoutes")
+const budgetRoutes=require("./Routes/budgetRoutes")
 dotenv.config();
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use("/apis", routes);
 app.use("/auth", authRoutes);
 app.use("/otps", otpRoutes);
-
+app.use("/msgs",msgRoutes)
+app.use("/budget",budgetRoutes)
 const PORT = 3000;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
