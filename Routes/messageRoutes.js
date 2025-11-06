@@ -18,8 +18,8 @@ router.get("/read", async (req, res) => {
 });
 router.delete("/delete",async(req,res)=>{
   try {
-    const {userId} = req.body
-    const result = await Message.deleteMany({userId})
+    const userId=req.query
+    const result = await Message.deleteMany(userId)
     if (result.deletedCount === 0) {
       return res.status(404).json({message: "No messages found to delete"})
     }
