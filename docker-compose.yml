@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./api-gateway/.env
+    depends_on:
+      - ai-service
+      - auth-service
+      - budget-service
+      - expenses-service
+      - message-service
+      
+
+  ai-service:
+    build: ./ai-service
+    container_name: ai-service
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./ai-service/.env
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "4001:4001"
+    env_file:
+      - ./auth-service/.env
+
+  budget-service:
+    build: ./budget-service
+    container_name: budget-service
+    ports:
+      - "4002:4002"
+    env_file:
+      - ./budget-service/.env
+
+  expenses-service:
+    build: ./expenses-service
+    container_name: expenses-service
+    ports:
+      - "4003:4003"
+    env_file:
+      - ./expenses-service/.env
+
+  message-service:
+    build: ./message-service
+    container_name: message-service
+    ports:
+      - "4004:4004"
+    env_file:
+      - ./message-service/.env
+
+  

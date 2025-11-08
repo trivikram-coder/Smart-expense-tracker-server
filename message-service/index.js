@@ -10,6 +10,6 @@ dbConn()
 app.get("/",(req,res)=>{
     res.send("Message service running")
 })
-app.listen(process.env.MESSAGE_SERVICE_PORT,()=>{
+app.listen(process.env.MESSAGE_SERVICE_PORT || 5000,()=>{
     console.log(`Server running on port ${process.env.MESSAGE_SERVICE_PORT}`);
 })
