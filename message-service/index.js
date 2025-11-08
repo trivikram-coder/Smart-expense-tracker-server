@@ -7,6 +7,9 @@ dotenv.config()
 app.use(express.json())
 app.use("/",messageController)
 dbConn()
+app.get("/",(req,res)=>{
+    res.send("Message service running")
+})
 app.listen(process.env.MESSAGE_SERVICE_PORT,()=>{
     console.log(`Server running on port ${process.env.MESSAGE_SERVICE_PORT}`);
 })
