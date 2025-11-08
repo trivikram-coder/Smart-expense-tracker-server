@@ -15,10 +15,10 @@ RUN npm install --prefix budget-service
 RUN npm install --prefix expenses-service
 RUN npm install --prefix ai-service
 RUN npm install --prefix message-service
-RUN npm install --prefix otp-service
+
 
 # Expose only the API Gateway port (Render needs this)
-EXPOSE 10000
+EXPOSE 3000
 
 # Keep container alive and start all services
 CMD ["sh", "-c", "\
@@ -28,5 +28,4 @@ CMD ["sh", "-c", "\
   'npm start --prefix budget-service' \
   'npm start --prefix expenses-service' \
   'npm start --prefix ai-service' \
-  'npm start --prefix message-service' \
-  'npm start --prefix otp-service'"]
+  'npm start --prefix message-service'"]
