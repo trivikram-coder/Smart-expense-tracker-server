@@ -1,27 +1,16 @@
 {
   "name": "expense-tracker-server",
   "version": "1.0.0",
-  "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
-  },
-  "author": "",
-  "license": "ISC",
-  "description": "Backend for Expense Tracker App",
-  "dependencies": {
-    "@google/generative-ai": "^0.24.1",
-    "bcryptjs": "^3.0.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^5.1.0",
-    "form-data": "^4.0.4",
-    "mailgun.js": "^12.1.0",
-    "mongoose": "^8.18.2",
-    "nodemailer": "^7.0.6",
-    "redis": "^5.8.3",
-    "resend": "^6.1.2"
+    "start": "concurrently -n \"GATEWAY,AUTH,EXPENSES,BUDGET,AI,MESSAGE\" -c \"blue,green,magenta,yellow,cyan,red,gray\" \"npm run start:gateway\" \"npm run start:auth\" \"npm run start:expenses\" \"npm run start:budget\" \"npm run start:ai\" \"npm run start:message\" ",
+    "start:gateway": "cd api-gateway && npm start",
+    "start:auth": "cd auth-service && npm start",
+    "start:expenses": "cd expenses-service && npm start",
+    "start:budget": "cd budget-service && npm start",
+    "start:ai": "cd ai-service && npm start",
+    "start:message": "cd message-service && npm start"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "concurrently": "^8.2.2"
   }
 }
