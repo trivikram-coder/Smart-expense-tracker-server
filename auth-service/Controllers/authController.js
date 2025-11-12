@@ -119,7 +119,8 @@ router.put("/reset-password", async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "No user found with this email" });
     }
-    const isMatch=bcrypt.compare(password,user.password);
+    const isMatch=await bcrypt.compare(password,user.password);
+    
     if(isMatch){
       return res.status(400).json({message:"Please enter new password"})
     }
