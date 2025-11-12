@@ -102,24 +102,40 @@ router.put("/user/:id", async (req, res) => {
 
 
 // PUT /user/:id/password - update user password only
-router.put("/user/:id/password", async (req, res) => {
+// PUT /auth/reset-password - reset user password using email
+router.put("/reset-password", async (req, res) => {
   try {
-    const { password } = req.body;
-    if (!password) {
-      return res.status(400).json({ message: "Password is required" });
+    const { email, password } = req.body;
+
+    // Validation
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and new password are required" });
     }
 
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "No user found with this email" });
+    }
+
+    // Hash new password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.params.id,
-      { password: hashedPassword },
-      { new: true, runValidators: true }
-    ).select("-password");
+    // Update password
+    user.password = hashedPassword;
+    await user.save();
 
-    res.status(200).json({ message: "Password updated successfully", user: updatedUser });
+    res.status(200).json({
+      message: "Password reset successful",
+      user: { id: user._id, email: user.email },
+    });
   } catch (err) {
-    res.status(400).json({ message: "Password update failed", error: err.message });
+    console.error("Password Reset Error:", err);
+    res
+      .status(500)
+      .json({ message: "Password reset failed", error: err.message });
   }
 });
 
