@@ -1,5 +1,7 @@
 // routes/expenses.js
 const express = require("express");
+const NodeCache=require("node-cache")
+const caching=new NodeCache({stdTTL:60});
 const Expenses = require("../Models/Expenses");
 const { detectIntent, handleIntent } = require("../expenseCalulate/expCal");
 
@@ -33,7 +35,10 @@ router.post("/add", async (req, res) => {
 router.get("/read", async (req, res) => {
   try {
     const userId = req.query.userId;
-    
+    const expenseCache=caching.get(`expenses${userId}`)
+    if(expenseCache){
+      return res.status(200).json({source:"Cache",data:expenseCache})
+    }
 
     if (!userId) {
       return res.status(400).json({ message: "userId query parameter is required" });
@@ -41,7 +46,7 @@ router.get("/read", async (req, res) => {
     
 
     const expenses = await Expenses.find({ userId }).sort({ date: -1 });
- 
+    caching.set(`expenses${userId}`,expenses)
     res.status(200).json({ data: expenses });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch expenses", error: error.message });
@@ -61,7 +66,7 @@ router.delete("/remove/:id", async (req, res) => {
     if (!del) {
       return res.status(404).json({ message: "Expense not found or unauthorized" });
     }
-    
+    caching.del(`expenses${userId}`)
     res.status(200).json({ message: "Expense deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Unable to delete expense", error: error.message });
