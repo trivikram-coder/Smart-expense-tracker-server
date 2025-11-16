@@ -58,6 +58,7 @@ router.get("/read", async (req, res) => {
     const totalCount = await Expenses.countDocuments({ userId });
 
     // 2️⃣ Check cache
+    const allExpenses=await Expenses.find({userId});
     const cached = caching.get(`expenses_${userId}`);
     if (cached) {
       // Apply paging on cached data also
@@ -66,7 +67,8 @@ router.get("/read", async (req, res) => {
       return res.status(200).json({
         source: "cache",
         data: paged,
-        totalCount
+        totalCount,
+        allData:allExpenses
       });
     }
 
@@ -85,7 +87,8 @@ router.get("/read", async (req, res) => {
     res.status(200).json({
       source: "db",
       data: expensesData,
-      totalCount
+      totalCount,
+      allData:allExpenses
     });
 
   } catch (error) {
