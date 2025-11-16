@@ -46,33 +46,56 @@ router.post("/add", async (req, res) => {
 // ===============================
 router.get("/read", async (req, res) => {
   try {
-    const userId = req.query.userId;
+    const { userId, page, limit } = req.query;
 
-    if (!userId) {
-      return res.status(400).json({ message: "userId query parameter is required" });
+    if (!userId || !page || !limit) {
+      return res.status(400).json({ message: "userId, page and limit are required" });
     }
 
-    // 1️⃣ Try cache first
-    const expenseCache = caching.get(`expenses${userId}`);
-    if (expenseCache) {
-      return res.status(200).json({ source: "cache", data: expenseCache });
+    const skip = (page - 1) * limit;
+
+    // 1️⃣ Correct: count documents
+    const totalCount = await Expenses.countDocuments({ userId });
+
+    // 2️⃣ Check cache
+    const cached = caching.get(`expenses_${userId}`);
+    if (cached) {
+      // Apply paging on cached data also
+      const paged = cached.slice(skip, skip + Number(limit));
+
+      return res.status(200).json({
+        source: "cache",
+        data: paged,
+        totalCount
+      });
     }
 
-    // 2️⃣ Fetch from DB
-    const expenses = await Expenses.find({ userId }).sort({ date: -1 });
+    // 3️⃣ Fetch from DB
+    const expensesData = await Expenses.find({ userId })
+      .sort({ date: -1 })
+      .skip(skip)
+      .limit(limit);
 
-    // 3️⃣ Save plain objects in cache
-    const plainExpenses = expenses.map((e) => e.toObject());
-    caching.set(`expenses${userId}`, plainExpenses);
+    // 4️⃣ Save full list in cache (future pages benefit)
+    const fullExpenses = await Expenses.find({ userId }).sort({ date: -1 });
+    const plain = fullExpenses.map(e => e.toObject());
 
-    res.status(200).json({ source: "db", data: plainExpenses });
+    caching.set(`expenses_${userId}`, plain);
+
+    res.status(200).json({
+      source: "db",
+      data: expensesData,
+      totalCount
+    });
+
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch expenses",
-      error: error.message,
+      error: error.message
     });
   }
 });
+
 
 // ===============================
 // DELETE EXPENSE
