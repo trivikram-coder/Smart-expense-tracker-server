@@ -59,7 +59,7 @@ router.get("/read", async (req, res) => {
 
     // 2️⃣ Check cache
     const allExpenses=await Expenses.find({userId});
-    const cached = caching.get(`expenses_${userId}`);
+    const cached = caching.get(`expenses${userId}`);
     if (cached) {
       // Apply paging on cached data also
       const paged = cached.slice(skip, skip + Number(limit));
@@ -82,7 +82,7 @@ router.get("/read", async (req, res) => {
     const fullExpenses = await Expenses.find({ userId }).sort({ date: -1 });
     const plain = fullExpenses.map(e => e.toObject());
 
-    caching.set(`expenses_${userId}`, plain);
+    caching.set(`expenses${userId}`, plain);
 
     res.status(200).json({
       source: "db",
