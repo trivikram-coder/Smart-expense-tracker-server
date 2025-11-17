@@ -1,6 +1,7 @@
 const axios=require("axios")
 const Expenses = require("../Models/Expenses");
-
+const dotenv=require("dotenv");
+dotenv.config();
 function detectIntent(message) {
   if (message.includes("spent")) return "AddExpense";
   if (message.includes("show")) return "ShowExpenses";
@@ -32,10 +33,10 @@ function getAmount(message) {
 async function getCategory(item){
   try{
 
-    const category=await axios.post("http://localhost:4000/category",{item:item});
+    const category=await axios.post(`${process.env.AI_SERVICE_URL}/category`,{item:item});
     
    const res=category.data.category;
-   console.log(res)
+   
     return res;
   }
   catch(error){
@@ -45,7 +46,7 @@ async function getCategory(item){
 async function addExpense(message, userId) {
   const amount = getAmount(message);
   const item = getItem(message);
-  console.log(item)
+ 
   const category=await getCategory(item)
   const date=new Date(Date.now())
   const expense = new Expenses({

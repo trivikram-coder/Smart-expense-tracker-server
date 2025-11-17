@@ -5,9 +5,9 @@ const caching = new NodeCache({ stdTTL: 60 }); // 1 min cache
 const Expenses = require("../Models/Expenses");
 const { detectIntent, handleIntent } = require("../expenseCalulate/expCal");
 const axios = require("axios");
-
+const dotenv=require("dotenv");
 const router = express.Router();
-
+dotenv.config();
 // ===============================
 // ADD EXPENSE (CHAT MESSAGE BASED)
 // ===============================
@@ -24,7 +24,7 @@ router.post("/add", async (req, res) => {
     const reply = await handleIntent(intent, message, userId);
 
     // Store chat messages
-    await axios.post("http://localhost:4004/add", [
+    await axios.post(`${process.env.MESSAGE_SERVICE_URL}/add`, [
       { userId, sender: "client", message },
       { userId, sender: "bot", message: reply },
     ]);
