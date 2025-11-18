@@ -46,14 +46,14 @@ async function getCategory(item){
 async function addExpense(message, userId) {
   const amount = getAmount(message);
   const item = getItem(message);
- 
-  const category=await getCategory(item)
-  const date=new Date(Date.now())
+
+  const category = await getCategory(item);
+
   const expense = new Expenses({
     amount,
     item,
     category,
-    date: date.toLocaleDateString(), // store as Date
+    date: new Date(),    // REAL DATE
     userId
   });
 
@@ -61,6 +61,7 @@ async function addExpense(message, userId) {
 
   return `Got it! Added ₹${amount} of ${item} under ${category} on ${expense.date.toLocaleDateString()}`;
 }
+
 
 async function showExpenses(userId) {
   const expenses = await Expenses.find({ userId });

@@ -77,7 +77,7 @@ router.get("/read", async (req, res) => {
 
     // Fetch paginated (LATEST FIRST)
     const expensesData = await Expenses.find({ userId })
-      .sort({ date: -1 })              // <--- IMPORTANT
+      .sort({date:-1})         // <--- IMPORTANT
       .skip(skip)
       .limit(Number(limit));
 
