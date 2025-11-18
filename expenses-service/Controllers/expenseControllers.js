@@ -5,9 +5,11 @@ const caching = new NodeCache({ stdTTL: 60 }); // 1 min cache
 const Expenses = require("../Models/Expenses");
 const { detectIntent, handleIntent } = require("../expenseCalulate/expCal");
 const axios = require("axios");
-const dotenv=require("dotenv");
+const dotenv = require("dotenv");
 const router = express.Router();
 dotenv.config();
+
+
 // ===============================
 // ADD EXPENSE (CHAT MESSAGE BASED)
 // ===============================
@@ -23,13 +25,13 @@ router.post("/add", async (req, res) => {
     const intent = detectIntent(message.toLowerCase());
     const reply = await handleIntent(intent, message, userId);
 
-    // Store chat messages
+    // Store chat
     await axios.post(`${process.env.MESSAGE_SERVICE_URL}/add`, [
       { userId, sender: "client", message },
       { userId, sender: "bot", message: reply },
     ]);
 
-    // ⚠️ IMPORTANT: Clear or update expense cache
+    // Clear cached expenses
     caching.del(`expenses${userId}`);
 
     res.status(200).json({ message: reply });
@@ -41,8 +43,9 @@ router.post("/add", async (req, res) => {
   }
 });
 
+
 // ===============================
-// READ ALL EXPENSES (WITH CACHE)
+// READ ALL EXPENSES (LATEST FIRST)
 // ===============================
 router.get("/read", async (req, res) => {
   try {
@@ -54,41 +57,45 @@ router.get("/read", async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    // 1️⃣ Correct: count documents
+    // Total count
     const totalCount = await Expenses.countDocuments({ userId });
 
-    // 2️⃣ Check cache
-    const allExpenses=await Expenses.find({userId});
+    // Try cache
     const cached = caching.get(`expenses${userId}`);
+
     if (cached) {
-      // Apply paging on cached data also
+      // Cached list is already sorted (we store sorted version)
       const paged = cached.slice(skip, skip + Number(limit));
 
       return res.status(200).json({
         source: "cache",
         data: paged,
         totalCount,
-        allData:allExpenses
+        allData: cached // FULL sorted list
       });
     }
 
-    // 3️⃣ Fetch from DB
+    // Fetch paginated (LATEST FIRST)
     const expensesData = await Expenses.find({ userId })
-      .sort({ date: -1 })
+      .sort({ date: -1 })              // <--- IMPORTANT
       .skip(skip)
-      .limit(limit);
+      .limit(Number(limit));
 
-    // 4️⃣ Save full list in cache (future pages benefit)
-    const fullExpenses = await Expenses.find({ userId }).sort({ date: -1 });
-    const plain = fullExpenses.map(e => e.toObject());
+    // Fetch FULL sorted data (LATEST FIRST)
+    const fullExpenses = await Expenses.find({ userId })
+      .sort({ date: -1 });             // <--- IMPORTANT
 
+    // Convert to plain JS objects
+    const plain = fullExpenses.map((e) => e.toObject());
+
+    // store sorted list in cache
     caching.set(`expenses${userId}`, plain);
 
     res.status(200).json({
       source: "db",
       data: expensesData,
       totalCount,
-      allData:allExpenses
+      allData: plain
     });
 
   } catch (error) {
@@ -117,7 +124,7 @@ router.delete("/remove/:id", async (req, res) => {
       return res.status(404).json({ message: "Expense not found or unauthorized" });
     }
 
-    // Clear cache so next GET fetches fresh data
+    // Clear cache
     caching.del(`expenses${userId}`);
 
     res.status(200).json({ message: "Expense deleted successfully" });
