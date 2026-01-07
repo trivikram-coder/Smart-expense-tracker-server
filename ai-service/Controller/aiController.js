@@ -12,7 +12,7 @@ async function categorizeItem(itemName) {
   Item: "${itemName}"
   Return only the category name.
   `;
-  const response = await axios.post(`process.env.AI_URL/chat`, { prompt });
+  const response = await axios.post(`${process.env.AI_URL}/chat`, { prompt });
   const category = response.data.response;
  
   return category;
@@ -29,5 +29,8 @@ app.post('/category',async(req,res)=>{
   } catch (error) {
     
   }
+})
+app.get("/",(req,res)=>{
+  res.send("<h2>Ai Expense service is running </h2>")
 })
 module.exports=app
