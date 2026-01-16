@@ -21,6 +21,6 @@ router.get(
 );
 
 router.get('/google/failure',(req,res)=>{
-    res.json({message:"Google login failed"})
+    res.status(401).json({message:"User already registered with this email"})
 })
 module.exports=router
