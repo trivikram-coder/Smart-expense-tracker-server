@@ -24,6 +24,7 @@ router.post("/register", async (req, res) => {
       name,
       email,
       password: hashedPassword,
+      provider:"local"
     });
 
     res.status(201).json({
@@ -45,9 +46,12 @@ router.post("/register", async (req, res) => {
 // ==========================
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
+    const { email, password,provider } = req.body;
+    if(!provider || !provider==="local"){
+      return res.status(403).json({message:"The current email has created an account with google"})
+    }
+    const user = await User.findOne({email});
+   
     if (!user)
       return res.status(400).json({ message: "Invalid email or password" });
 
@@ -76,10 +80,23 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: "Login failed", error: err.message });
   }
 });
+router.get("/me", (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  res.json({
+    id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+    provider: req.user.provider
+  });
+});
 
 // ==========================
 // GET USER (WITH CACHE)
-// ==========================
+// =========================
+// =
 router.get("/user/:id", async (req, res) => {
   try {
     const userId = req.params.id;
