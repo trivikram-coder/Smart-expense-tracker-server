@@ -47,7 +47,7 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { email, password,provider } = req.body;
-    if(!provider || !provider==="local"){
+    if(provider==="google"||!provider){
       return res.status(403).json({message:"The current email has created an account with google"})
     }
     const user = await User.findOne({email});
