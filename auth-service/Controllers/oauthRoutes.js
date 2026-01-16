@@ -13,7 +13,7 @@ router.get("/google/login",
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    failureRedirect: "/google/failure"
+    failureRedirect: "auth/google/failure"
   }),
   (req, res) => {
     res.redirect(`${process.env.CLIENT_URL}?userId=${req.user._id}`)
