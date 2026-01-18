@@ -1,10 +1,19 @@
 // middlewares/auth.js
-function isAuthenticated(req, res, next) {
-  if (req.session && req.session.userId) {
-    req.user = { id: req.session.userId }; // attach user info to request
-    return next();
+const jwt=require("jsonwebtoken")
+require("dotenv").config()
+const verifyToken=(req,res,next)=>{
+  const header=req.headers.authorization
+  if(!header || !header.startsWith("Bearer ")){
+    return res.status(401).json({message:"Token is missing"})
   }
-  return res.status(401).json({ message: "Not authenticated" });
+  const token=header.split(" ")[1]
+  
+  try {
+    const decoded=jwt.verify(token,process.env.JWT_SECRET)
+    req.user=decoded;
+    next()
+  } catch (error) {
+    res.status(403).json({message:error.message})
+  }
 }
-
-module.exports = { isAuthenticated };
+module.exports = { verifyToken };
