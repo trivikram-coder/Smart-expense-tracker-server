@@ -7,16 +7,31 @@ dotenv.config()
 
 async function categorizeItem(itemName) {
   const prompt = `
-  Categorize the following expense item into one of these categories:
-  [Food, Dairy, Transport, Entertainment, Health, Shopping, Bills, Education, Others].
-  Item: "${itemName}"
-  Return only the category name.
-  `;
+You are an expense categorization assistant.
+
+Categories:
+- Food (restaurants, snacks, meals)
+- Dairy (milk, cheese, curd)
+- Transport (bus, train, taxi, fuel)
+- Entertainment (movies, cinema tickets, OTT subscriptions, games, concerts)
+- Health (medicine, doctor, hospital)
+- Shopping (clothes, electronics, accessories)
+- Bills (electricity, water, mobile, internet)
+- Education (books, courses, fees)
+- Others (only if it does not fit anywhere)
+
+Rules:
+- If the item is a movie name or cinema-related, categorize it as "Entertainment".
+- Return ONLY the category name. No explanation.
+
+Item: "${itemName}"
+`;
+
   const response = await axios.post(`${process.env.AI_URL}/chat`, { prompt });
-  const category = response.data.response;
- 
-  return category;
+
+  return response.data.response.trim();
 }
+
 
 app.post('/category',async(req,res)=>{
   try {
